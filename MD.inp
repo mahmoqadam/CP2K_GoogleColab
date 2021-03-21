@@ -1,0 +1,75 @@
+&GLOBAL
+  PROJECT MD_1_H2O      ! select the name of project
+  RUN_TYPE MD           ! select the kind of calculation
+  PRINT_LEVEL LOW
+  &TIMINGS
+     THRESHOLD 0.000001
+  &END
+&END GLOBAL
+&MOTION                 !defines the whole set of parameters needed for an MD
+  &MD
+    ENSEMBLE NVT        !ensemble/integrator for MD propagation (NVT, NVE, NPT)
+    STEPS 10
+    TIMESTEP 0.5
+    TEMPERATURE 300.0
+    &THERMOSTAT         !thermostat type and parameters controlling the thermostat
+      TYPE NOSE
+      &NOSE
+        LENGTH 3
+        TIMECON 1000
+      &END NOSE
+    &END THERMOSTAT
+  &END MD
+&END MOTION
+&FORCE_EVAL
+  METHOD QS
+  &SUBSYS
+    &CELL
+       ABC 12.4138 12.4138 12.4138
+    &END CELL
+    &COORD
+       O         -0.24538        2.16528        0.01905
+       H          0.72251        2.15132       -0.02524
+       H         -0.52422        1.88632       -0.86604
+    &END COORD
+    &KIND H
+      BASIS_SET DZVP-GTH-PADE
+      POTENTIAL GTH-PADE-q1
+    &END KIND
+    &KIND O
+      BASIS_SET DZVP-GTH-PADE
+      POTENTIAL GTH-PADE-q6
+    &END KIND
+  &END SUBSYS
+  &DFT
+    BASIS_SET_FILE_NAME ./BASIS_SET
+    POTENTIAL_FILE_NAME ./POTENTIAL
+    &QS
+      EPS_DEFAULT 1.0E-4
+      WF_INTERPOLATION PS
+      EXTRAPOLATION_ORDER 3
+    &END QS
+    &MGRID
+      CUTOFF 200
+      REL_CUTOFF 30
+    &END MGRID
+    &SCF                    !do the convergence
+        SCF_GUESS RESTART
+        EPS_SCF 1.0E-5
+        MAX_SCF 20
+        &OUTER_SCF          !outer cycle just to improve the convergence
+            EPS_SCF 1.0E-5
+            MAX_SCF 20
+        &END
+        &OT                 !orbital transformation (OT) method and minimizer
+            MINIMIZER DIIS
+            PRECONDITIONER FULL_ALL
+            ENERGY_GAP 0.01
+        &END
+    &END SCF
+    &XC
+      &XC_FUNCTIONAL PADE
+      &END XC_FUNCTIONAL
+    &END XC
+  &END DFT
+&END FORCE_EVAL
